@@ -1,9 +1,12 @@
 package com.rainbow.android.logic
 
 import androidx.lifecycle.liveData
-import com.rainbow.android.logic.model.Place
+import com.rainbow.android.logic.model.Weather
 import com.rainbow.android.logic.network.RainbowNetwork
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.coroutineScope
+import kotlin.coroutines.CoroutineContext
 
 /**
  * @Author: 赖富城
@@ -13,8 +16,8 @@ import kotlinx.coroutines.Dispatchers
  */
 object Repository {
 
-    //为了能将异步获取的数据以响应式编程的方式通知给上一层，通 常会返回一个LiveData对象
-    fun searchPlaces(query: String) = liveData(Dispatchers.IO) {
+    //为了能将异步获取的数据以响应式编程的方式通知给上一层，通常会返回一个LiveData对象
+    /*fun searchPlaces(query: String) = liveData(Dispatchers.IO) {
         val result = try {
             val placeResponse = RainbowNetwork.searchPlaces(query)
             if (placeResponse.status == "ok") {
@@ -27,5 +30,53 @@ object Repository {
             Result.failure<List<Place>>(e)
         }
         emit(result)
+    }*/
+
+    /*改造之后的代码，不需要再自己try-catch*/
+    fun searchPlaces(query: String) = fire(Dispatchers.IO) {
+        val placeResponse = RainbowNetwork.searchPlaces(query)
+        if (placeResponse.status == "ok") {
+            val places = placeResponse.places
+            Result.success(places)
+        } else {
+            Result.failure(RuntimeException("response status is ${placeResponse.status}"))
+        }
     }
+
+    fun refreshWeather(lng: String, lat: String) = fire(Dispatchers.IO) {
+        coroutineScope {
+            val deferredRealtime = async {
+                RainbowNetwork.getRealtimeWeather(lng, lat)
+            }
+            val deferredDaily = async {
+                RainbowNetwork.getDailyWeather(lng, lat)
+            }
+            val realtimeResponse = deferredRealtime.await()
+            val dailyResponse = deferredDaily.await()
+            if (realtimeResponse.status == "ok" && dailyResponse.status == "ok") {
+                val weather = Weather(
+                    realtimeResponse.result.realtime,
+                    dailyResponse.result.daily
+                )
+                Result.success(weather)
+            } else {
+                Result.failure(
+                    RuntimeException(
+                        "realtime response status is ${realtimeResponse.status}" +
+                                "daily response status is ${dailyResponse.status}"
+                    )
+                )
+            }
+        }
+    }
+
+    private fun <T> fire(context: CoroutineContext, block: suspend () -> Result<T>) =
+        liveData<Result<T>>(context) {
+            val result = try {
+                block()
+            } catch (e: Exception) {
+                Result.failure<T>(e)
+            }
+            emit(result)
+        }
 }

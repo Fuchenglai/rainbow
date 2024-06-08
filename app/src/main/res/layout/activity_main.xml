@@ -3,6 +3,8 @@
         xmlns:android="http://schemas.android.com/apk/res/android"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
+
+    <!--Fragment是不能直接显示在界面上的，因此我们还需要把它添加到Activity里-->
     <fragment
             android:id="@+id/placeFragment"
             android:name="com.rainbow.android.ui.place.PlaceFragment"
