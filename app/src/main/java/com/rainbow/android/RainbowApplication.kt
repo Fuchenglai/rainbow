@@ -16,7 +16,7 @@ class RainbowApplication:Application() {
         lateinit var context: Context
 
         //彩云天气的令牌值
-        const val TOKEN= "8quxsUetrI4Q0Fsx"
+        const val TOKEN= "你的令牌值"
     }
     override fun onCreate() {
         super.onCreate()
