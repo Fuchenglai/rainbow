@@ -1,6 +1,8 @@
 package com.rainbow.android.logic
 
 import androidx.lifecycle.liveData
+import com.rainbow.android.logic.dao.PlaceDao
+import com.rainbow.android.logic.model.Place
 import com.rainbow.android.logic.model.Weather
 import com.rainbow.android.logic.network.RainbowNetwork
 import kotlinx.coroutines.Dispatchers
@@ -15,6 +17,10 @@ import kotlin.coroutines.CoroutineContext
  * 取，并将获得的数据返回给调用方。仓库层的统一封装入口
  */
 object Repository {
+
+    fun savePlace(place: Place) = PlaceDao.savePlace(place)
+    fun getSavedPlace() = PlaceDao.getSavedPlace()
+    fun isPlaceSaved() = PlaceDao.isPlaceSaved()
 
     //为了能将异步获取的数据以响应式编程的方式通知给上一层，通常会返回一个LiveData对象
     /*fun searchPlaces(query: String) = liveData(Dispatchers.IO) {

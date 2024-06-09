@@ -8,6 +8,7 @@ import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
 import com.rainbow.android.R
 import com.rainbow.android.logic.model.Weather
 import com.rainbow.android.logic.model.getSky
@@ -15,6 +16,8 @@ import java.text.SimpleDateFormat
 import java.util.*
 
 class WeatherActivity : AppCompatActivity() {
+
+    private val swipeRefresh by lazy { findViewById<SwipeRefreshLayout>(R.id.swipeRefresh) }
 
 
     val viewModel by lazy { ViewModelProvider(this).get(WeatherViewModel::class.java) }
@@ -34,6 +37,8 @@ class WeatherActivity : AppCompatActivity() {
         if (viewModel.placeName.isEmpty()) {
             viewModel.placeName = intent.getStringExtra("place_name") ?: ""
         }
+
+
         viewModel.weatherLiveData.observe(this, Observer { result ->
             val weather = result.getOrNull()
             if (weather != null) {
@@ -42,9 +47,20 @@ class WeatherActivity : AppCompatActivity() {
                 Toast.makeText(this, "无法成功获取天气信息", Toast.LENGTH_SHORT).show()
                 result.exceptionOrNull()?.printStackTrace()
             }
+
+            swipeRefresh.isRefreshing = false
         })
-        viewModel.refreshWeather(viewModel.locationLng, viewModel.locationLat)
+
+        swipeRefresh.setColorSchemeResources(R.color.colorPrimary)
+        refreshWeather()
+        swipeRefresh.setOnRefreshListener { refreshWeather() }
     }
+
+    fun refreshWeather() {
+        viewModel.refreshWeather(viewModel.locationLng, viewModel.locationLat)
+        swipeRefresh.isRefreshing = true
+    }
+
     private fun showWeatherInfo(weather: Weather) {
 
         val placeName = findViewById<TextView>(R.id.placeName)
@@ -78,8 +94,10 @@ class WeatherActivity : AppCompatActivity() {
         for (i in 0 until days) {
             val skycon = daily.skycon[i]
             val temperature = daily.temperature[i]
-            val view = LayoutInflater.from(this).inflate(R.layout.forecast_item,
-                forecastLayout, false)
+            val view = LayoutInflater.from(this).inflate(
+                R.layout.forecast_item,
+                forecastLayout, false
+            )
             val dateInfo = view.findViewById(R.id.dateInfo) as TextView
             val skyIcon = view.findViewById(R.id.skyIcon) as ImageView
             val skyInfo = view.findViewById(R.id.skyInfo) as TextView

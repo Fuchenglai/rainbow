@@ -5,7 +5,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.rainbow.android.R
 import com.rainbow.android.logic.model.Place
@@ -16,7 +15,7 @@ import com.rainbow.android.ui.weather.WeatherActivity
  * @CreateTime: 2024/6/8
  * @Description:
  */
-class PlaceAdapter(private val fragment: Fragment, private val placeList: List<Place>) :
+class PlaceAdapter(private val fragment: PlaceFragment, private val placeList: List<Place>) :
     RecyclerView.Adapter<PlaceAdapter.ViewHolder>() {
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val placeName: TextView = view.findViewById(R.id.placeName)
@@ -37,6 +36,7 @@ class PlaceAdapter(private val fragment: Fragment, private val placeList: List<P
                 putExtra("location_lat", place.location.lat)
                 putExtra("place_name", place.name)
             }
+            fragment.viewModel.savaPlace(place)
             fragment.startActivity(intent)
             fragment.activity?.finish()
         }
