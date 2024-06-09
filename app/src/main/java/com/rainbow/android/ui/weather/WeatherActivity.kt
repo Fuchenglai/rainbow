@@ -1,11 +1,15 @@
 package com.rainbow.android.ui.weather
 
+import android.content.Context
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
+import android.view.inputmethod.InputMethodManager
 import android.widget.*
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.GravityCompat
+import androidx.drawerlayout.widget.DrawerLayout
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout
@@ -18,6 +22,10 @@ import java.util.*
 class WeatherActivity : AppCompatActivity() {
 
     private val swipeRefresh by lazy { findViewById<SwipeRefreshLayout>(R.id.swipeRefresh) }
+
+    val drawerLayout by lazy { findViewById<DrawerLayout>(R.id.drawerLayout) }
+
+    private val navBtn by lazy { findViewById<Button>(R.id.navNtn) }
 
 
     val viewModel by lazy { ViewModelProvider(this).get(WeatherViewModel::class.java) }
@@ -54,6 +62,34 @@ class WeatherActivity : AppCompatActivity() {
         swipeRefresh.setColorSchemeResources(R.color.colorPrimary)
         refreshWeather()
         swipeRefresh.setOnRefreshListener { refreshWeather() }
+
+        navBtn.setOnClickListener {
+
+            //打开滑动菜单
+            drawerLayout.openDrawer(GravityCompat.START)
+        }
+        //监听DrawerLayout的状态
+        drawerLayout.addDrawerListener(object : DrawerLayout.DrawerListener {
+            override fun onDrawerStateChanged(newState: Int) {
+
+            }
+
+            override fun onDrawerSlide(drawerView: View, slideOffset: Float) {
+
+            }
+
+            override fun onDrawerOpened(drawerView: View) {
+
+            }
+
+            //当滑动菜单被隐藏的时候，同时也要隐藏输入法
+            override fun onDrawerClosed(drawerView: View) {
+                val manager = getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+
+                manager.hideSoftInputFromWindow(drawerView.windowToken, InputMethodManager.HIDE_NOT_ALWAYS)
+            }
+        })
+
     }
 
     fun refreshWeather() {

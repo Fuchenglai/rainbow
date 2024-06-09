@@ -11,6 +11,7 @@ import androidx.fragment.app.Fragment
 import androidx.lifecycle.Observer
 import androidx.lifecycle.ViewModelProvider
 import androidx.recyclerview.widget.LinearLayoutManager
+import com.rainbow.android.MainActivity
 import com.rainbow.android.databinding.FragmentPlaceBinding
 import com.rainbow.android.ui.weather.WeatherActivity
 
@@ -46,7 +47,9 @@ class PlaceFragment : Fragment() {
     override fun onActivityCreated(savedInstanceState: Bundle?) {
         super.onActivityCreated(savedInstanceState)
 
-        if (viewModel.isPlaceSaved()) {
+        //只有当PlaceFragment被嵌入MainActivity中，并且之前已经保存了选中的城市，此时才会直接跳转到WeatherActivity
+        if (activity is MainActivity&&viewModel.isPlaceSaved()) {
+
             val place = viewModel.getSavedPlace()
 
             val intent = Intent(context, WeatherActivity::class.java).apply {
@@ -56,6 +59,7 @@ class PlaceFragment : Fragment() {
             }
             startActivity(intent)
             activity?.finish()
+            return
         }
 
         val layoutManager = LinearLayoutManager(activity)
